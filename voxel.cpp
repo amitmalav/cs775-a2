@@ -41,6 +41,7 @@ public:
 		extremeColor = Vec3(251,23,23);
 		color = Vec3(255,0,0);
 	}
+	//update method
 	void update(float t){
 		if (!start_explosion)
 		{
