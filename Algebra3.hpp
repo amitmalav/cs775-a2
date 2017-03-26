@@ -29,6 +29,7 @@
 //
 
 //Algebra Helper
+
 #ifndef __Algebra3_hpp__
 #define __Algebra3_hpp__
 

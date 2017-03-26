@@ -13,6 +13,7 @@ using namespace std;
 
 bool start_explosion= false;
 //Particle class
+
 class Particle{
 public:
 	Vec3 position;
