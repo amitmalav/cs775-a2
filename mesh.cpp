@@ -12,7 +12,7 @@ using namespace std;
 #define EXPL_AMNNT 1000
 
 bool start_explosion= false;
-
+//Particle class
 class Particle{
 public:
 	Vec3 position;
