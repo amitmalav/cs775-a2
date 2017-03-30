@@ -12,7 +12,6 @@ using namespace std;
 #define EXPL_AMNNT 1000
 
 bool start_explosion= false;
-//Animating particle explosion
 
 class Particle{
 public:
