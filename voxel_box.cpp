@@ -69,6 +69,11 @@ public:
 			{
 				for (int i3 = 1; i3 < SCREENSIZE/VOXUNIT - 1; ++i3)
 				{
+					if ((i3 >= (SCREENSIZE/2 - 2.0)/VOXUNIT && i3 <= (SCREENSIZE/2 + 2.0)/VOXUNIT) && (i1 >= (SCREENSIZE/2 - 2.0)/VOXUNIT && i1 <= (SCREENSIZE/2 + 2.0)/VOXUNIT ) && (i2 >= (SCREENSIZE/2 + 1.0)/VOXUNIT && i2 <= (SCREENSIZE/2 + 3.0)/VOXUNIT))
+					{
+						voxels[i1][i2][i3].count = 0;
+						continue;
+					}
 					voxels[i1][i2][i3].count = new_voxels[i1][i2][i3];
 				}
 			}
@@ -82,7 +87,7 @@ public:
 		glPushMatrix();
 		glDisable (GL_LIGHTING);
 		glDisable (GL_DEPTH_TEST);
-		glBegin(GL_POINTS);
+		glBegin(GL_POLYGON);
 		for (int i1 = 0; i1 < SCREENSIZE/VOXUNIT; ++i1)
 		{
 			for (int i2 = 0; i2 < SCREENSIZE/VOXUNIT; ++i2)
@@ -130,9 +135,39 @@ display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
-  glTranslatef (0.0, 0.0, -20.0);
-  glRotatef (0, 0.0, 1.0, 0.0);
+	glTranslatef (0.0, 0.0, -20.0);
+	glRotatef (0, 0.0, 1.0, 0.0);
 	e.render();
+
+	/*cube render*/
+	glBegin(GL_QUADS);
+    glColor3f(1.0f,1.0f,0.0f);
+    glVertex3f( 2.0f, 3.0f,-2.0f);
+    glVertex3f(-2.0f, 3.0f,-2.0f);
+    glVertex3f(-2.0f, 3.0f, 2.0f);
+    glVertex3f( 2.0f, 3.0f, 2.0f);
+    glVertex3f( 2.0f, 1.0f, 2.0f);
+    glVertex3f(-2.0f, 1.0f, 2.0f);
+    glVertex3f(-2.0f, 1.0f,-2.0f);
+    glVertex3f( 2.0f, 1.0f,-2.0f);
+    glVertex3f( 2.0f, 3.0f, 2.0f);
+    glVertex3f(-2.0f, 3.0f, 2.0f);
+    glVertex3f(-2.0f, 1.0f, 2.0f);
+    glVertex3f( 2.0f, 1.0f, 2.0f);
+    glVertex3f( 2.0f, 1.0f,-2.0f);
+    glVertex3f(-2.0f, 1.0f,-2.0f);
+    glVertex3f(-2.0f, 3.0f,-2.0f);
+    glVertex3f( 2.0f, 3.0f,-2.0f);
+    glVertex3f(-2.0f, 3.0f, 2.0f);
+    glVertex3f(-2.0f, 3.0f,-2.0f);
+    glVertex3f(-2.0f, 1.0f,-2.0f);
+    glVertex3f(-2.0f, 1.0f, 2.0f);
+    glVertex3f( 2.0f, 3.0f,-2.0f);
+    glVertex3f( 2.0f, 3.0f, 2.0f);
+    glVertex3f( 2.0f, 1.0f, 2.0f);
+    glVertex3f( 2.0f, 1.0f,-2.0f);
+	glEnd();  
+
 	glutSwapBuffers();
 }
 

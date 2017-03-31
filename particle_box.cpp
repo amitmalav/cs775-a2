@@ -8,74 +8,69 @@
 #include "Algebra3.hpp"
 #include <vector>
 using namespace std;
-#define TIMELIMIT 50.0
-#define EXPL_AMNNT 100000000
-#define VOXUNIT 0.2
-#define SCREENSIZE 20
-bool start_explosion= false;
+#define TIMELIMIT 6.0
+#define EXPL_AMNNT 5000
 
-class Voxel{
+bool start_explosion= false;
+//Animating particle explosion
+
+class Particle{
 public:
-	int count;
-	Voxel(){count =0;}
+	Vec3 position;
+	Vec3 velocity;
+	Vec3 acceleration;
+	Particle(){
+	}
+	void update(float timestep){
+		if((position + velocity * timestep)[1] >= 1.0){
+			if (abs((position + velocity * timestep)[0])<=2 && abs((position + velocity * timestep)[2])<=2)
+			{
+				velocity[1] = -1.0*velocity[1];
+				acceleration[1] = -1.0*velocity[1]; 
+			}
+		}
+		position = position + velocity * timestep;
+		velocity = velocity + acceleration * timestep;
+		acceleration = acceleration/3;
+	}
 };
 
 class Explosion{
 public:
 	Vec3 color;
 	Vec3 extremeColor;
+	vector<Particle> particles;
 	float time;
-	Voxel voxels[int(SCREENSIZE/VOXUNIT)][int(SCREENSIZE/VOXUNIT)][int(SCREENSIZE/VOXUNIT)];
 	Explosion(){
 		time = 0;
-		for (int i1 = 1; i1 < SCREENSIZE/VOXUNIT - 1; ++i1)
-		{
-			for (int i2 = 1; i2 < SCREENSIZE/VOXUNIT - 1; ++i2)
-			{
-				for (int i3 = 1; i3 < SCREENSIZE/VOXUNIT - 1; ++i3)
-				{
-					voxels[i1][i2][i3].count = 0;
-				}
-			}
-		}
-		voxels[int(SCREENSIZE/(2*VOXUNIT))][int(SCREENSIZE/(2*VOXUNIT))][int(SCREENSIZE/(2*VOXUNIT))].count = EXPL_AMNNT;
 		extremeColor = Vec3(251,23,23);
 		color = Vec3(255,0,0);
 	}
-	//update method
+	Explosion(int n){
+		for (int i = 0; i < n; ++i)
+		{
+			Particle p;
+			p.position = Vec3(0,0,0);
+			double r = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+			double y = 2 * 3.14 * static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+			double z = 1 - r*r;
+			p.acceleration = 5*Vec3(r*cos(y),r*sin(y),z);
+			particles.push_back(p);
+		}
+		time = 0;
+		color = Vec3(240.0/255,162.0/255,14.0/255);
+	}
 	void update(float t){
 		if (!start_explosion)
 		{
 			return;
 		}
-		int new_voxels[int(SCREENSIZE/VOXUNIT)][int(SCREENSIZE/VOXUNIT)][int(SCREENSIZE/VOXUNIT)];
-		for (int i1 = 1; i1 < SCREENSIZE/VOXUNIT - 1; ++i1)
-		{
-			for (int i2 = 1; i2 < SCREENSIZE/VOXUNIT - 1; ++i2)
-			{
-				for (int i3 = 1; i3 < SCREENSIZE/VOXUNIT - 1; ++i3)
-				{
-					if (voxels[i1][i2][i3].count< 0)
-					{
-						cout<<"error"<<endl;
-					}
-					new_voxels[i1][i2][i3] = (voxels[i1-1][i2][i3].count+voxels[i1+1][i2][i3].count+voxels[i1][i2+1][i3].count+voxels[i1][i2-1][i3].count+voxels[i1][i2][i3+1].count+voxels[i1][i2][i3-1].count+voxels[i1][i2][i3].count) / 7;
-				}
-			}
+		for(int i = 0; i < particles.size(); i++){
+			particles[i].update(t);
 		}
-		for (int i1 = 1; i1 < SCREENSIZE/VOXUNIT - 1; ++i1)
-		{
-			for (int i2 = 1; i2 < SCREENSIZE/VOXUNIT - 1; ++i2)
-			{
-				for (int i3 = 1; i3 < SCREENSIZE/VOXUNIT - 1; ++i3)
-				{
-					voxels[i1][i2][i3].count = new_voxels[i1][i2][i3];
-				}
-			}
-		}
-		time+=t;
-		color = Vec3((246.0-((200.0*time)/(TIMELIMIT)))/255,(230.0 -((200.0*time)/(TIMELIMIT)))/255,(105.0 -((80.0*time)/(TIMELIMIT)))/255); 
-		if (time>= TIMELIMIT)color = Vec3(0,0,0);
+		time += t;
+
+		color = Vec3((246.0-((200.0*time*time)/(TIMELIMIT*TIMELIMIT)))/255,(230.0 -((200.0*time)/(TIMELIMIT)))/255,(105.0 -((80.0*time)/(TIMELIMIT)))/255); 
 		return;
 	}
 	void render(){
@@ -83,23 +78,11 @@ public:
 		glDisable (GL_LIGHTING);
 		glDisable (GL_DEPTH_TEST);
 		glBegin(GL_POINTS);
-		for (int i1 = 0; i1 < SCREENSIZE/VOXUNIT; ++i1)
+		for (int i = 0; i < particles.size(); ++i)
 		{
-			for (int i2 = 0; i2 < SCREENSIZE/VOXUNIT; ++i2)
-			{
-				for (int i3 = 0; i3 < SCREENSIZE/VOXUNIT; ++i3)
-				{
-					if (voxels[i1][i2][i3].count <= 0)
-					{
-						continue;
-					}
-					Vec3 color1 = color;
-					glColor3f(color1[0],color1[1],color1[2]);
-					glVertex3f (i1*VOXUNIT - SCREENSIZE/2,i2*VOXUNIT - SCREENSIZE/2,i3*VOXUNIT - SCREENSIZE/2);
-				}
-			}
+			glColor3f(color[0],color[1],color[2]);
+			glVertex3f (particles[i].position[0],particles[i].position[1],particles[i].position[2]);
 		}
-
 		glEnd();
 		glPopMatrix();
 		glEnable (GL_LIGHTING);
@@ -110,7 +93,7 @@ public:
 	}
 };
 
-Explosion e;
+Explosion e(EXPL_AMNNT);
 
 void keyboard(unsigned char c, int x,int y){
 	switch(c){
@@ -130,14 +113,45 @@ display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
-  glTranslatef (0.0, 0.0, -20.0);
-  glRotatef (0, 0.0, 1.0, 0.0);
+	glTranslatef (0.0, 0.0, -20.0);
+	glRotatef (0, 0.0, 1.0, 0.0);
 	e.render();
+
+	/*cube render*/
+	glBegin(GL_QUADS);
+    glColor3f(1.0f,1.0f,0.0f);
+    glVertex3f( 2.0f, 3.0f,-2.0f);
+    glVertex3f(-2.0f, 3.0f,-2.0f);
+    glVertex3f(-2.0f, 3.0f, 2.0f);
+    glVertex3f( 2.0f, 3.0f, 2.0f);
+    glVertex3f( 2.0f, 1.0f, 2.0f);
+    glVertex3f(-2.0f, 1.0f, 2.0f);
+    glVertex3f(-2.0f, 1.0f,-2.0f);
+    glVertex3f( 2.0f, 1.0f,-2.0f);
+    glVertex3f( 2.0f, 3.0f, 2.0f);
+    glVertex3f(-2.0f, 3.0f, 2.0f);
+    glVertex3f(-2.0f, 1.0f, 2.0f);
+    glVertex3f( 2.0f, 1.0f, 2.0f);
+    glVertex3f( 2.0f, 1.0f,-2.0f);
+    glVertex3f(-2.0f, 1.0f,-2.0f);
+    glVertex3f(-2.0f, 3.0f,-2.0f);
+    glVertex3f( 2.0f, 3.0f,-2.0f);
+    glVertex3f(-2.0f, 3.0f, 2.0f);
+    glVertex3f(-2.0f, 3.0f,-2.0f);
+    glVertex3f(-2.0f, 1.0f,-2.0f);
+    glVertex3f(-2.0f, 1.0f, 2.0f);
+    glVertex3f( 2.0f, 3.0f,-2.0f);
+    glVertex3f( 2.0f, 3.0f, 2.0f);
+    glVertex3f( 2.0f, 1.0f, 2.0f);
+    glVertex3f( 2.0f, 1.0f,-2.0f);
+	glEnd();            
+
 	glutSwapBuffers();
 }
 
 void idle(void){
 	e.update(0.1);
+	// display();
 	glutPostRedisplay();
 }
 
@@ -151,6 +165,7 @@ void reshape(int w,int h){
 }
 
 int main(int argc,char** argv){
+	srand(time(NULL));
 	GLfloat  light0Amb[4] =  { 1.0, 0.6, 0.2, 1.0 };
 	GLfloat  light0Dif[4] =  { 1.0, 0.6, 0.2, 1.0 };
 	GLfloat  light0Spec[4] = { 0.0, 0.0, 0.0, 1.0 };
@@ -172,7 +187,8 @@ int main(int argc,char** argv){
 	glutKeyboardFunc(keyboard);
 	glutIdleFunc(idle);
 	glutDisplayFunc(display);
-	glutReshapeFunc(reshape);	
+	glutReshapeFunc(reshape);
+	
 	glEnable (GL_LIGHT0);
 	glEnable (GL_LIGHT1);
 	glLightfv (GL_LIGHT0, GL_AMBIENT, light0Amb);

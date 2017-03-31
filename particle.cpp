@@ -8,10 +8,11 @@
 #include "Algebra3.hpp"
 #include <vector>
 using namespace std;
-#define TIMELIMIT 50.0
+#define TIMELIMIT 6.0
 #define EXPL_AMNNT 1000
 
 bool start_explosion= false;
+//Animating particle explosion
 
 class Particle{
 public:
@@ -46,13 +47,10 @@ public:
 			double r = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
 			double y = 2 * 3.14 * static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
 			double z = 1 - r*r;
-			// cout<<r*cos(y)<<" "<<r*sin(y)<<" "<<z<<endl;
-			// p.velocity = 0.5*Vec3(r*cos(y),r*sin(y),z);
-			p.acceleration = 0.5*Vec3(r*cos(y),r*sin(y),z);
+			p.acceleration = 5*Vec3(r*cos(y),r*sin(y),z);
 			particles.push_back(p);
 		}
-		time = 0.0;
-		// extremeColor = Vec3(251,23,23);
+		time = 0;
 		color = Vec3(240.0/255,162.0/255,14.0/255);
 	}
 	void update(float t){
@@ -64,51 +62,11 @@ public:
 			particles[i].update(t);
 		}
 		time += t;
-		// cout << time << endl;
-		if(time > TIMELIMIT){
-			color = Vec3(0, 0, 0);
-		}
-		// else if(time < (TIMELIMIT/2)){
-		// 	color = 2 * time * extremeColor / TIMELIMIT;
-		// }
-		// else{
-		// 	color = extremeColor - 2*(time - TIMELIMIT/2)*extremeColor/TIMELIMIT;
-		// }
-		else{
-			 if(time <= TIMELIMIT/6.0){
-				color = Vec3(240.0/255,162.0/255,14.0/255);
-			}
-			else{
-				if( (TIMELIMIT/6.0) < time <= (TIMELIMIT/3.0)){
-					color = Vec3(251.0/255,23.0/255,23.0/255);
-				}
-				else{
-					if((TIMELIMIT/3.0) < time <= (TIMELIMIT / 2.0)){
-						color = Vec3(216.0/255,190.0/255,31.0/255);
-						cout << "poop" << endl;
-					}
-					else {
-						if((TIMELIMIT/2) < time <= (2 * TIMELIMIT/3)){
-							color = Vec3(234.0/255,27.0/255,27.0/255);
-						}
-						else{
-							if((2*TIMELIMIT/3) < time <= (5 * TIMELIMIT / 6)){
-								color = Vec3(216.0/255,209.0/255,45.0/255);
-							}
-							else{
-								color = Vec3(240.0/255,162.0/255,14.0/255);
-							}
-						}
-					}
-				}
-			}
-		}
-		// cout << time << endl;
-		// cout << color << endl;
-		// cout << TIMELIMIT << endl;
+
+		color = Vec3((246.0-((200.0*time*time)/(TIMELIMIT*TIMELIMIT)))/255,(230.0 -((200.0*time)/(TIMELIMIT)))/255,(105.0 -((80.0*time)/(TIMELIMIT)))/255); 
+		return;
 	}
 	void render(){
-		// cout<<"render"<<endl;
 		glPushMatrix();
 		glDisable (GL_LIGHTING);
 		glDisable (GL_DEPTH_TEST);
@@ -116,7 +74,6 @@ public:
 		for (int i = 0; i < particles.size(); ++i)
 		{
 			glColor3f(color[0],color[1],color[2]);
-			// cout<<particles[i].position[0]<<" "<<particles[i].position[1]<<" "<<particles[i].position[2]<<endl;
 			glVertex3f (particles[i].position[0],particles[i].position[1],particles[i].position[2]);
 		}
 		glEnd();
@@ -151,7 +108,6 @@ display(void)
 	glLoadIdentity();
   glTranslatef (0.0, 0.0, -20.0);
   glRotatef (0, 0.0, 1.0, 0.0);
-	// glutSolidSphere (2.0,15,9);
 	e.render();
 	glutSwapBuffers();
 }
@@ -170,11 +126,6 @@ void reshape(int w,int h){
 	gluPerspective(45,(((GLfloat)w)/h),0.1,100);
 	glMatrixMode(GL_MODELVIEW);
 }
-
-// void
-// mousePress(int button, int state, int x, int y){
-// 	return;
-// }
 
 int main(int argc,char** argv){
 	srand(time(NULL));
@@ -200,8 +151,6 @@ int main(int argc,char** argv){
 	glutIdleFunc(idle);
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
-	// glutMouseFunc(mousePress);
-	// glutMotionFunc(mouseMove);
 	
 	glEnable (GL_LIGHT0);
 	glEnable (GL_LIGHT1);
